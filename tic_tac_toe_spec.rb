@@ -50,3 +50,18 @@ describe Board do
     end
   end
 end
+
+describe Player do 
+  
+  before(:each) do
+    @player = Player.new
+  end
+  
+  describe '#set_params' do 
+    it 'sets the player marker and turn preferences' do
+      @player.set_params('X', 'last')
+      expect(@player.marker).to eq('X')
+      expect(@player.turn).to eq('last')
+    end
+  end
+end
