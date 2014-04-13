@@ -65,3 +65,126 @@ describe Player do
     end
   end
 end
+
+describe GameView do
+  before(:each) do
+    @game_view = GameView.new
+    STDOUT.stub(:puts)
+  end
+
+  describe '#get_player_marker' do
+    it 'prints a message to get the marker preference' do
+      STDOUT.should_receive(:puts).with('Choose your marker(1 = X, 2 = O):')
+      @game_view.stub(:gets){'1'}
+      @game_view.get_player_marker
+    end
+
+    context 'option 1' do
+      it 'returns X' do
+        @game_view.stub(:gets){'1'}
+        expect(@game_view.get_player_marker).to eq('X')
+      end
+    end
+
+    context 'option 2' do
+      it 'returns O' do
+        @game_view.stub(:gets){'2'}
+        expect(@game_view.get_player_marker).to eq('O')
+      end
+    end
+
+    context 'invalid option' do
+      it 'repeats the request until there is a valid selection' do
+        @game_view.stub(:gets).and_return('3', '1')
+        expect(@game_view.get_player_marker).to eq('X')
+      end
+    end
+  end
+
+  describe '#get_player_turn' do
+    it 'prints a message to get the turn order preference' do
+      STDOUT.should_receive(:puts).with('Choose to go first or last (1 = first, 2 = last):')
+      @game_view.stub(:gets){'1'}
+      @game_view.get_player_turn
+    end
+
+    context 'option 1' do
+      it 'returns first' do
+        @game_view.stub(:gets){'1'}
+        expect(@game_view.get_player_turn).to eq('first')
+      end
+    end
+
+    context 'option 2' do
+      it 'returns last' do
+        @game_view.stub(:gets){'2'}
+        expect(@game_view.get_player_turn).to eq('last')
+      end
+    end
+
+    context 'invalid option' do
+      it 'repeats the request until there is a valid selection' do
+        @game_view.stub(:gets).and_return('3', '1')
+        expect(@game_view.get_player_turn).to eq('first')
+      end
+    end
+  end
+
+  describe '#new_game?' do
+    it 'prints a message to ask if the player wants to play again' do
+      STDOUT.should_receive(:puts).with('Do you want to play again?(y/n)')
+      @game_view.stub(:gets){'y'}
+      @game_view.new_game?
+    end
+
+    context 'yes' do
+      it 'returns true' do
+        @game_view.stub(:gets){'y'}
+        expect(@game_view.new_game?).to eq(true)
+      end
+    end
+
+    context 'no' do
+      it 'returns false' do
+        @game_view.stub(:gets){'n'}
+        expect(@game_view.new_game?).to eq(false)
+      end
+    end
+
+    context 'invalid option' do
+      it 'repeats the request until there is a valid selection' do
+        @game_view.stub(:gets).and_return('z', 'y')
+        expect(@game_view.new_game?).to eq(true)
+      end
+    end
+  end
+
+  describe '#get_move' do
+    it 'prints a message to ask for the player move' do
+      STDOUT.should_receive(:puts).with("Enter coordinates for your next move as 'row(0-3), col(0-3)':")
+      @game_view.stub(:gets){'0,0'}
+      @game_view.get_move
+    end
+
+    it 'returns a hash of the player move' do
+      @game_view.stub(:gets){'1,1'}
+      expect(@game_view.get_move).to eq({row: 1, col: 1})
+    end
+
+    context 'invalid coordinates' do
+      it 'repeats the request until there is a valid selection' do
+        @game_view.stub(:gets).and_return('0,5','1,2')
+        expect(@game_view.get_move).to eq({row: 1, col: 2}) 
+      end
+    end
+  end
+
+  describe '#show' do
+    it 'prints a board with the current markers placed' do
+      board_positions = [['X',nil,nil],[nil,'O',nil],[nil,nil,'X']]
+      expected_output = "X| | \n |O| \n | |X\n"
+      STDOUT.should_receive(:puts).with(expected_output)
+      @game_view.show(board_positions)
+    end
+  end
+end
