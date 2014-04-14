@@ -161,7 +161,7 @@ describe GameView do
 
   describe '#get_move' do
     it 'prints a message to ask for the player move' do
-      STDOUT.should_receive(:puts).with("Enter coordinates for your next move as 'row(0-2), col(0-2)':")
+      STDOUT.should_receive(:puts).with("Enter coordinates for your next move as 'row, col' with '0,0' being the top-left:")
       @game_view.stub(:gets){'0,0'}
       @game_view.get_move
     end
@@ -182,7 +182,7 @@ describe GameView do
   describe '#show' do
     it 'prints a board with the current markers placed' do
       board_positions = [['X',nil,nil],[nil,'O',nil],[nil,nil,'X']]
-      expected_output = "X| | \n |O| \n | |X\n"
+      expected_output = "\nX| | \n |O| \n | |X\n"
       STDOUT.should_receive(:puts).with(expected_output)
       @game_view.show(board_positions)
     end

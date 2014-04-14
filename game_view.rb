@@ -27,7 +27,7 @@ class GameView
   end
 
   def get_move
-    puts "Enter coordinates for your next move as 'row(0-2), col(0-2)':"
+    puts "Enter coordinates for your next move as 'row, col' with '0,0' being the top-left:"
     move = gets.chomp.split(',').map{|num| num.to_i}
     if move.length == 2 && within_bounds?(move.first) && within_bounds?(move.last)
       return {row: move.first, col: move.last}
@@ -37,7 +37,7 @@ class GameView
   end
 
   def show(board_positions)
-    board_visual = String.new
+    board_visual = "\n"
     for row in 0...board_positions.length do 
       for col in 0...board_positions.first.length do
         board_visual += transform_to_s(col, board_positions[row][col])
