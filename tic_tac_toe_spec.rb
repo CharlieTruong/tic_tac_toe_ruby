@@ -187,4 +187,78 @@ describe GameView do
       @game_view.show(board_positions)
     end
   end
+
+  describe '#declare_winner' do
+    context 'player wins' do
+      it 'prints that the player won' do
+        STDOUT.should_receive(:puts).with('You won!')
+        @game_view.declare_winner('player')
+      end
+    end
+
+    context 'player lost' do
+      it 'prints that the player lost' do
+        STDOUT.should_receive(:puts).with('You lost!')
+        @game_view.declare_winner('cpu')
+      end
+    end
+
+    context 'tie' do
+      it 'prints there was a tie' do
+        STDOUT.should_receive(:puts).with('It\'s a tie!')
+        @game_view.declare_winner('tie')
+      end
+    end
+  end
+end
+
+describe Game do
+  before(:each) do
+    @game = Game.new
+    @game.instance_variable_set(:@board, double('board'))
+    @game.instance_variable_set(:@game_view, double('game_view'))
+    @game.instance_variable_set(:@cpu, double('cpu'))
+  end
+
+  describe '#reset' do
+    before(:each) do
+      @game.stub(:start)
+      @game.instance_variable_get(:@board).stub(:clear)
+    end
+
+    it 'calls board#clear' do
+      @game.instance_variable_get(:@board).should_receive(:clear) 
+      @game.reset
+    end
+
+    it 'calls #start' do
+      @game.should_receive(:start)
+      @game.reset
+    end
+  end
+
+  describe '#player_move' do
+    before(:each) do
+      @game.instance_variable_get(:@game_view).stub(:get_move).and_return({row: 0, col: 0})
+      @game.instance_variable_get(:@board).stub(:set_marker)
+      @game.instance_variable_get(:@board).stub(:positions)
+      @game.instance_variable_get(:@player).stub(:marker).and_return('X')
+      @game.instance_variable_get(:@cpu).stub(:check_winner).and_return('X')
+    end
+
+    it 'calls game_view#get_move' do
+      @game.instance_variable_get(:@game_view).should_receive(:get_move)
+      @game.player_move
+    end
+
+    it 'calls board#set_marker with the results of game_view#get_move' do
+      @game.instance_variable_get(:@board).should_receive(:set_marker).with(0, 0, 'X')
+      @game.player_move
+    end
+
+    it 'checks for the winner and sets it in game#won' do
+      @game.player_move
+      expect(@game.instance_variable_get(:@won)).to eq('X')
+    end
+  end
 end

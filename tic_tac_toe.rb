@@ -85,6 +85,16 @@ class GameView
     puts board_visual
   end
 
+  def declare_winner(winner)
+    if winner == 'player'
+      puts 'You won!'
+    elsif winner == 'cpu'
+      puts 'You lost!'
+    elsif winner == 'tie'
+      puts 'It\'s a tie!'
+    end
+  end
+
   private
 
   def within_bounds?(num)
@@ -99,3 +109,26 @@ class GameView
   end
 end
 
+class CPU
+end
+
+class Game
+  def initialize
+    @won = false
+    @board = Board.new
+    @game_view = GameView.new
+    @player = Player.new
+    @cpu = CPU.new
+  end
+
+  def reset
+    @board.clear
+    start
+  end
+
+  def player_move
+    move = @game_view.get_move
+    @board.set_marker(move[:row], move[:col], @player.marker)
+    @won = @cpu.check_winner(@board.positions)
+  end
+end
