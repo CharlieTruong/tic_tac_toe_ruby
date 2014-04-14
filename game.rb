@@ -23,13 +23,11 @@ class Game
     move = @game_view.get_move
     move = @game_view.get_move while !@board.positions[move[:row]][move[:col]].nil?
     @board.set_marker(move[:row], move[:col], @player.marker)
-    @won = @cpu.check_winner(@board.positions)
   end
 
   def cpu_move
     move = @cpu.next_move(@board.positions)
     @board.set_marker(move[:row], move[:col], @cpu.marker)
-    @won = @cpu.check_winner(@board.positions)
   end
 
   def start
@@ -44,8 +42,10 @@ class Game
     cpu_move if @player.turn == 'last'
     while @won == false
       player_move
+      @won = @cpu.check_winner(@board.positions)
       break if @won != false
       cpu_move
+      @won = @cpu.check_winner(@board.positions)
     end
   end
 
@@ -68,8 +68,7 @@ class Game
 
   def end_game
     @game_view.show(@board.positions)
-    winner = identify_winner
-    @game_view.declare_winner(winner)
+    @game_view.declare_winner(identify_winner)
     reset if @game_view.new_game?
   end
 end

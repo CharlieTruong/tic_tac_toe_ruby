@@ -252,11 +252,6 @@ describe Game do
       @game.player_move
     end
 
-    it 'checks for the winner and sets it in game#won' do
-      @game.player_move
-      expect(@game.instance_variable_get(:@won)).to eq('X')
-    end
-
     it 'displays the board' do
       @game.instance_variable_get(:@game_view).should_receive(:show).with([['O',nil,nil],[nil,nil,nil],[nil,'X',nil]])
       @game.player_move
@@ -286,11 +281,6 @@ describe Game do
     it 'calls board#set_marker with the results of cpu#next_move' do
       @game.instance_variable_get(:@board).should_receive(:set_marker).with(0, 0, 'O')
       @game.cpu_move
-    end
-
-    it 'checks for the winner and sets it in game#won' do
-      @game.cpu_move
-      expect(@game.instance_variable_get(:@won)).to eq('O')
     end
   end
 
@@ -331,9 +321,16 @@ describe Game do
       end
     end 
 
-    it 'enters the game loop' do
-      @game.should_receive(:game_loop)
-      @game.start
+    context 'game loop' do
+
+      it 'loops between the player and cpu move until there is a winner' do
+        @game.instance_variable_set(:@won, false)
+        @game.instance_variable_get(:@cpu).stub(:check_winner).and_return(false, false, 'X')
+        @game.instance_variable_get(:@player).stub(:turn).and_return('first')
+        @game.should_receive(:player_move).twice
+        @game.start
+      end
+
     end
 
     context 'game over' do
