@@ -215,9 +215,6 @@ end
 describe Game do
   before(:each) do
     @game = Game.new
-    @game.instance_variable_set(:@board, double('board'))
-    @game.instance_variable_set(:@game_view, double('game_view'))
-    @game.instance_variable_set(:@cpu, double('cpu'))
   end
 
   describe '#reset' do
@@ -231,6 +228,12 @@ describe Game do
       @game.reset
     end
 
+    it 'sets @won to false again' do
+      @game.instance_variable_set(:@won, 'X')
+      @game.reset
+      expect(@game.instance_variable_get(:@won)).to eq(false)
+    end
+
     it 'calls #start' do
       @game.should_receive(:start)
       @game.reset
@@ -239,9 +242,10 @@ describe Game do
 
   describe '#player_move' do
     before(:each) do
-      @game.instance_variable_get(:@game_view).stub(:get_move).and_return({row: 0, col: 0})
+      @game.instance_variable_get(:@game_view).stub(:get_move).and_return({row: 1, col: 1})
+      @game.instance_variable_get(:@game_view).stub(:show)
       @game.instance_variable_get(:@board).stub(:set_marker)
-      @game.instance_variable_get(:@board).stub(:positions)
+      @game.instance_variable_get(:@board).stub(:positions).and_return([['O',nil,nil],[nil,nil,nil],[nil,'X',nil]])
       @game.instance_variable_get(:@player).stub(:marker).and_return('X')
       @game.instance_variable_get(:@cpu).stub(:check_winner).and_return('X')
     end
@@ -252,7 +256,7 @@ describe Game do
     end
 
     it 'calls board#set_marker with the results of game_view#get_move' do
-      @game.instance_variable_get(:@board).should_receive(:set_marker).with(0, 0, 'X')
+      @game.instance_variable_get(:@board).should_receive(:set_marker).with(1, 1, 'X')
       @game.player_move
     end
 
@@ -260,8 +264,126 @@ describe Game do
       @game.player_move
       expect(@game.instance_variable_get(:@won)).to eq('X')
     end
+
+    it 'displays the board' do
+      @game.instance_variable_get(:@game_view).should_receive(:show).with([['O',nil,nil],[nil,nil,nil],[nil,'X',nil]])
+      @game.player_move
+    end
+
+    it 'repeats the request for coordinates if the player chooses an occupied space' do
+      @game.instance_variable_get(:@game_view).stub(:get_move).and_return({row: 0, col: 0}, {row: 1, col: 1})
+      @game.instance_variable_get(:@game_view).should_receive(:get_move).twice
+      @game.player_move
+    end
   end
-end
+
+  describe '#cpu_move' do
+    before(:each) do
+      @game.instance_variable_get(:@cpu).stub(:next_move).and_return({row: 0, col: 0})
+      @game.instance_variable_get(:@board).stub(:set_marker)
+      @game.instance_variable_get(:@board).stub(:positions)
+      @game.instance_variable_get(:@cpu).stub(:marker).and_return('O')
+      @game.instance_variable_get(:@cpu).stub(:check_winner).and_return('O')
+    end
+
+    it 'calls cpu#next_move' do
+      @game.instance_variable_get(:@cpu).should_receive(:next_move)
+      @game.cpu_move
+    end
+
+    it 'calls board#set_marker with the results of cpu#next_move' do
+      @game.instance_variable_get(:@board).should_receive(:set_marker).with(0, 0, 'O')
+      @game.cpu_move
+    end
+
+    it 'checks for the winner and sets it in game#won' do
+      @game.cpu_move
+      expect(@game.instance_variable_get(:@won)).to eq('O')
+    end
+  end
+
+  describe '#start' do
+    before(:each) do
+      @game.instance_variable_get(:@game_view).stub(:get_player_marker).and_return('X')
+      @game.instance_variable_get(:@game_view).stub(:get_player_turn).and_return('last')
+      @game.stub(:player_move)
+      @game.stub(:cpu_move)
+      @game.instance_variable_set(:@won, 'X')
+      @game.instance_variable_get(:@game_view).stub(:show)
+      @game.instance_variable_get(:@game_view).stub(:new_game?).and_return(false)
+    end
+
+    it 'sets the player marker and turn' do
+      @game.instance_variable_get(:@player).should_receive(:set_params).with('X', 'last')
+      @game.start
+    end
+
+    it 'sets the cpu marker' do
+      @game.instance_variable_get(:@cpu).should_receive(:set_marker).with('X')
+      @game.start
+    end
+
+    context 'player goes first' do
+      it 'cpu#next_move is not called' do
+        @game.instance_variable_get(:@player).stub(:turn).and_return('first')
+        @game.should_not_receive(:cpu_move)
+        @game.start
+      end
+    end
+
+    context 'player goes last' do
+      it 'cpu#next_move is called' do
+        @game.instance_variable_get(:@player).stub(:turn).and_return('last')
+        @game.should_receive(:cpu_move)
+        @game.start
+      end
+    end 
+
+    it 'enters the game loop' do
+      @game.should_receive(:game_loop)
+      @game.start
+    end
+
+    context 'game over' do
+
+      before(:each) do
+        @game.stub(:identify_winner).and_return('player')
+      end
+
+      it 'displays the board one last time after the game loop ends' do
+        @game.instance_variable_get(:@game_view).should_receive(:show)
+        @game.start 
+      end
+
+      it 'identifies the winner' do 
+        @game.instance_variable_get(:@game_view).should_receive(:declare_winner).with('player')
+        @game.start
+      end
+
+      context 'player plays again' do
+        it 'calls #reset' do
+          @game.instance_variable_get(:@game_view).stub(:new_game?).and_return(true)
+          @game.should_receive(:reset)
+          @game.start
+        end
+      end
+
+      context 'player chooses not to play again' do
+        it 'does not call #reset' do
+          @game.instance_variable_get(:@game_view).stub(:new_game?).and_return(false)
+          @game.should_not_receive(:reset)
+          @game.start
+        end
+      end
+    end
+  end
+
+  describe '#game_loop' do
+    it 'calls #player_move and #cpu_move' do
+      
+    end
+  end
+end 
 
 describe CPU do
   before(:each) do
