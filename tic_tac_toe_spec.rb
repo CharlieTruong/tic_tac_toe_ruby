@@ -41,14 +41,6 @@ describe Board do
       expect(@board.positions.flatten.uniq).to eq([nil])
     end
   end
-
-  describe '#num_space_remaining' do
-    it 'returns the number of empty positions' do
-      @board.set_marker(0, 0, 'O')
-      @board.set_marker(1, 1, 'X')
-      expect(@board.num_space_remaining).to eq(7)
-    end
-  end
 end
 
 describe Player do 

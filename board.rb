@@ -17,8 +17,4 @@ class Board
   def clear
     @positions = Array.new(3){Array.new(3)}
   end
-
-  def num_space_remaining
-    @positions.flatten.select(&:nil?).length
-  end
 end
