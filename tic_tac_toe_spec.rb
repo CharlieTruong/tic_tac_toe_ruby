@@ -161,7 +161,7 @@ describe GameView do
 
   describe '#get_move' do
     it 'prints a message to ask for the player move' do
-      STDOUT.should_receive(:puts).with("Enter coordinates for your next move as 'row(0-3), col(0-3)':")
+      STDOUT.should_receive(:puts).with("Enter coordinates for your next move as 'row(0-2), col(0-2)':")
       @game_view.stub(:gets){'0,0'}
       @game_view.get_move
     end
@@ -259,6 +259,103 @@ describe Game do
     it 'checks for the winner and sets it in game#won' do
       @game.player_move
       expect(@game.instance_variable_get(:@won)).to eq('X')
+    end
+  end
+end
+
+describe CPU do
+  before(:each) do
+    @cpu = CPU.new
+  end
+
+  describe '#set_marker' do
+    it 'sets the cpu\'s marker based on the player marker' do 
+      @cpu.set_marker('X')
+      expect(@cpu.marker).to eq('O')
+    end
+
+    it 'sets the player\'s marker' do
+      @cpu.set_marker('X')
+      expect(@cpu.player_marker).to eq('X')
+    end
+  end
+
+  describe '#check_game_over' do
+    it 'returns the marker that has 3 consecutive horizontal positions' do
+      board_positions = [[nil,nil,nil],['X','X','X'],[nil,nil,nil]]
+      expect(@cpu.check_winner(board_positions)).to eq('X')
+    end
+
+    it 'returns the marker that has 3 consecutive vertical positions' do
+      board_positions = [[nil,nil,'O'],[nil,nil,'O'],[nil,nil,'O']]
+      expect(@cpu.check_winner(board_positions)).to eq('O')
+    end
+
+    it 'returns the marker that has 3 consecutive diagonal positions' do
+      board_positions = [[nil,nil,'O'],[nil,'O',nil],['O',nil,nil]]
+      expect(@cpu.check_winner(board_positions)).to eq('O')
+    end
+
+    it "returns 'tie' if all spaces are filled with no winner" do
+      board_positions = [['O','X','O'],['O','X','X'],['X','O','O']]
+      expect(@cpu.check_winner(board_positions)).to eq('tie')
+    end
+  end
+
+  describe '#next_move' do
+    before(:each) do
+      @cpu.instance_variable_set(:@marker, 'X')
+      @cpu.instance_variable_set(:@player_marker, 'O')
+    end
+
+    it 'takes the upper left corner if the cpu moves first' do
+      board_positions = [[nil,nil,nil],[nil,nil,nil],[nil,nil,nil]]
+      expect(@cpu.next_move(board_positions)).to eq({row: 0, col: 0})
+    end
+
+    it 'takes the center if the player took a corner first' do
+      board_positions = [['X',nil,nil],[nil,nil,nil],[nil,nil,nil]]
+      expect(@cpu.next_move(board_positions)).to eq({row: 1, col: 1})
+    end
+
+    it 'takes the winning move if available' do
+      board_positions = [[nil,nil,nil],['X','X',nil],[nil,nil,nil]]
+      expect(@cpu.next_move(board_positions)).to eq({row: 1, col: 2})
+    end
+
+    it 'blocks the player\'s winning move' do
+      board_positions = [[nil,nil,'O'],[nil,nil,nil],['O',nil,nil]]
+      expect(@cpu.next_move(board_positions)).to eq({row: 1, col: 1})
+    end
+
+    it 'creates a fork for two chances to win' do
+      board_positions = [['X',nil,nil],[nil,'O',nil],[nil,nil,'X']]
+      expect(@cpu.next_move(board_positions)).to eq({row: 0, col: 2})
+    end
+
+    it 'blocks the player from forking' do
+      board_positions = [['O',nil,nil],[nil,'X',nil],[nil,nil,'O']]
+      expect(@cpu.next_move(board_positions)).to eq({row: 0, col: 1})
+    end
+
+    it 'takes the center if none of the above moves exist' do
+      board_positions = [['X',nil,nil],[nil,nil,nil],[nil,'O',nil]]
+      expect(@cpu.next_move(board_positions)).to eq({row: 1, col: 1})
+    end
+
+    it 'takes the opposite corner of a player if the above moves do not exist' do
+      board_positions = [['O',nil,nil],[nil,'X',nil],[nil,nil,nil]]
+      expect(@cpu.next_move(board_positions)).to eq({row: 2, col: 2})
+    end
+
+    it 'takes an empty corner if the above moves do not exist' do
+      board_positions = [[nil,'X',nil],[nil,'O',nil],[nil,nil,nil]]
+      expect(@cpu.next_move(board_positions)).to eq({row: 0, col: 0})
+    end
+
+    it 'takes an available side if the above moves do not exist' do
+      board_positions = [['Y','Y','Y'],['Y','Y','Y'],['Y',nil,'Y']]
+      expect(@cpu.next_move(board_positions)).to eq({row: 2, col: 1})
     end
   end
 end
