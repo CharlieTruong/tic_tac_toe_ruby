@@ -421,52 +421,52 @@ describe CPU do
 
     it 'takes the upper left corner if the cpu moves first' do
       board_positions = [[nil,nil,nil],[nil,nil,nil],[nil,nil,nil]]
-      expect(@cpu.next_move(board_positions)).to eq({row: 0, col: 0})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 0, col: 0})
     end
 
     it 'takes the center if the player took a corner first' do
       board_positions = [['X',nil,nil],[nil,nil,nil],[nil,nil,nil]]
-      expect(@cpu.next_move(board_positions)).to eq({row: 1, col: 1})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 1, col: 1})
     end
 
     it 'takes the winning move if available' do
       board_positions = [[nil,nil,nil],['X','X',nil],[nil,nil,nil]]
-      expect(@cpu.next_move(board_positions)).to eq({row: 1, col: 2})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 1, col: 2})
     end
 
     it 'blocks the player\'s winning move' do
       board_positions = [[nil,nil,'O'],[nil,nil,nil],['O',nil,nil]]
-      expect(@cpu.next_move(board_positions)).to eq({row: 1, col: 1})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 1, col: 1})
     end
 
     it 'creates a fork for two chances to win' do
       board_positions = [['X',nil,nil],[nil,'O',nil],[nil,nil,'X']]
-      expect(@cpu.next_move(board_positions)).to eq({row: 0, col: 2})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 0, col: 2})
     end
 
     it 'blocks the player from forking' do
       board_positions = [['O',nil,nil],[nil,'X',nil],[nil,nil,'O']]
-      expect(@cpu.next_move(board_positions)).to eq({row: 0, col: 1})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 0, col: 1})
     end
 
     it 'takes the center if none of the above moves exist' do
       board_positions = [['X',nil,nil],[nil,nil,nil],[nil,'O',nil]]
-      expect(@cpu.next_move(board_positions)).to eq({row: 1, col: 1})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 1, col: 1})
     end
 
     it 'takes the opposite corner of a player if the above moves do not exist' do
       board_positions = [['O',nil,nil],[nil,'X',nil],[nil,nil,nil]]
-      expect(@cpu.next_move(board_positions)).to eq({row: 2, col: 2})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 2, col: 2})
     end
 
     it 'takes an empty corner if the above moves do not exist' do
       board_positions = [[nil,'X',nil],[nil,'O',nil],[nil,nil,nil]]
-      expect(@cpu.next_move(board_positions)).to eq({row: 0, col: 0})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 0, col: 0})
     end
 
     it 'takes an available side if the above moves do not exist' do
       board_positions = [['Y','Y','Y'],['Y','Y','Y'],['Y',nil,'Y']]
-      expect(@cpu.next_move(board_positions)).to eq({row: 2, col: 1})
+      expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 2, col: 1})
     end
   end
 end

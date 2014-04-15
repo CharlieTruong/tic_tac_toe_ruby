@@ -26,7 +26,7 @@ class Game
   end
 
   def cpu_move
-    move = @cpu.next_move(@board.positions)
+    move = @cpu.next_move(@cpu.marker, @player.marker, @board.positions)
     @board.set_marker(move[:row], move[:col], @cpu.marker)
   end
 
