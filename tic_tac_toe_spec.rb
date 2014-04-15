@@ -425,7 +425,7 @@ describe CPU do
     end
 
     it 'takes the center if the player took a corner first' do
-      board_positions = [['X',nil,nil],[nil,nil,nil],[nil,nil,nil]]
+      board_positions = [['O',nil,nil],[nil,nil,nil],[nil,nil,nil]]
       expect(@cpu.next_move(@cpu.marker, @cpu.player_marker, board_positions)).to eq({row: 1, col: 1})
     end
 
